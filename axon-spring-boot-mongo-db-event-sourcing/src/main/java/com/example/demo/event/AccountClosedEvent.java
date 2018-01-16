@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo.event;
 
 public class AccountClosedEvent {
 	public final String id;

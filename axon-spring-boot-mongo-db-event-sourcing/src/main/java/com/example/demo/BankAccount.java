@@ -5,23 +5,29 @@ import java.io.Serializable;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.model.AggregateIdentifier;
 import org.axonframework.commandhandling.model.AggregateLifecycle;
+import org.axonframework.config.EventHandlingConfiguration;
+import org.axonframework.eventhandling.AnnotationEventListenerAdapter;
+import org.axonframework.eventhandling.EventBus;
+import org.axonframework.eventhandling.EventListener;
+import org.axonframework.eventhandling.SimpleEventBus;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.eventsourcing.eventstore.EventStorageEngine;
 import org.axonframework.mongo.eventsourcing.eventstore.DefaultMongoTemplate;
 import org.axonframework.mongo.eventsourcing.eventstore.MongoEventStorageEngine;
+import org.axonframework.spring.config.EventHandlerRegistrar;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.util.Assert;
 
-import com.example.demo.CloseAccountCommand;
-import com.example.demo.CreateAccountCommand;
-import com.example.demo.DepositMoneyCommand;
-import com.example.demo.WithdrawMoneyCommand;
+import com.example.demo.command.CloseAccountCommand;
+import com.example.demo.command.CreateAccountCommand;
+import com.example.demo.command.DepositMoneyCommand;
+import com.example.demo.command.WithdrawMoneyCommand;
+import com.example.demo.event.AccountClosedEvent;
+import com.example.demo.event.AccountCreatedEvent;
+import com.example.demo.event.MoneyDepositedEvent;
+import com.example.demo.event.MoneyWithdrawnEvent;
 import com.mongodb.MongoClient;
-import com.example.demo.AccountClosedEvent;
-import com.example.demo.AccountCreatedEvent;
-import com.example.demo.MoneyDepositedEvent;
-import com.example.demo.MoneyWithdrawnEvent;
 
 @Aggregate
 public class BankAccount implements Serializable {
@@ -42,7 +48,9 @@ public class BankAccount implements Serializable {
 
 		Assert.hasLength(id, "Missin id");
 		Assert.hasLength(name, "Missig account creator");
+		
 
+		System.out.println("CreateAccountCommand wird ausgeführt: ID=" + id + " owner=" + name  );
 		AggregateLifecycle.apply(new AccountCreatedEvent(id, name, 0));
 	}
 
@@ -75,13 +83,15 @@ public class BankAccount implements Serializable {
 
 		Assert.isTrue(amount > 0.0, "Deposit must be a positiv number.");
 
+		System.out.println("on DepositMoneyCommand wird ausgeführt: ID=" + id + " amount: " + amount);
+
 		AggregateLifecycle.apply(new MoneyDepositedEvent(id, amount));
 	}
 
 	@EventSourcingHandler
 	protected void on(MoneyDepositedEvent event) {
 		this.balance += event.amount;
-		System.out.println("on MoneyDepositedEvent wurde ausgeführt: ID=" + id + " neue balance=" + balance);		
+		System.out.println("on MoneyDepositedEvent wurde ausgeführt: ID=" + id + " neue balance= " + balance);		
 	}
 
 	@CommandHandler
@@ -93,6 +103,7 @@ public class BankAccount implements Serializable {
 		if(balance - amount < 0) {
 		    throw new InsufficientBalanceException("Insufficient balance.");
 		}
+		System.out.println("on WithdrawMoneyCommand wird ausgeführt: ID=" + id + " amount: " + amount);
 
 		AggregateLifecycle.apply(new MoneyWithdrawnEvent(id, amount));
 	}

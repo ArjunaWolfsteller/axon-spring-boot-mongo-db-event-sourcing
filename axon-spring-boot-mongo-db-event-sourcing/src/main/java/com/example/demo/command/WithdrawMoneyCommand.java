@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo.command;
 
 import org.axonframework.commandhandling.TargetAggregateIdentifier;
 

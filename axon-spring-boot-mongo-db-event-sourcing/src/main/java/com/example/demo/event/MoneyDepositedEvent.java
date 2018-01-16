@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo.event;
 
 public class MoneyDepositedEvent {
 	public final String id;

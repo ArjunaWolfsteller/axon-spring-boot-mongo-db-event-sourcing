@@ -6,6 +6,12 @@ import java.util.concurrent.CompletableFuture;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.commandhandling.model.*;
 import org.springframework.web.bind.annotation.*;
+
+import com.example.demo.command.CloseAccountCommand;
+import com.example.demo.command.CreateAccountCommand;
+import com.example.demo.command.DepositMoneyCommand;
+import com.example.demo.command.WithdrawMoneyCommand;
+
 import org.springframework.http.HttpStatus;
 
 @RequestMapping("/accounts")
@@ -22,7 +28,9 @@ public class AccountApi {
 	public CompletableFuture<String> createAccount(@RequestBody AccountOwner user) {
 		String id = UUID.randomUUID().toString();
 		System.out.println("erstellte ID: " + id.toString());
-		return commandGateway.send(new CreateAccountCommand(id, user.name));
+		CompletableFuture<String> temp = commandGateway.send(new CreateAccountCommand(id, user.name));
+		System.out.println("wichtig: " + temp.toString());		//das sind asyncrone Ergebnisse.... Hä? Gucke hier Junge: http://www.angelikalanger.com/Articles/EffectiveJava/79.Java8.CompletableFuture/79.Java8.CompletableFuture.html
+		return temp;
 	}
 
 	static class AccountOwner {
